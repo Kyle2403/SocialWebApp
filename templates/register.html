@@ -1,0 +1,11 @@
+{% include 'top.html' %}
+    <div id="content">
+        <form class="pure-form pure-form-stacked login" method="POST" action="{{ url_for('register') }}">
+            <h2>Register</h2>
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input class="pure-button pure-button-primary" type="submit">
+        </form>
+    </div>
+</body>
+</html>

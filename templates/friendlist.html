@@ -1,0 +1,32 @@
+{% include 'top.html' %}
+<style>
+    figure {
+        margin-left: 0;
+        color: black;
+    }
+    div {
+        font-size: medium;
+        word-wrap: break-word;
+        padding: 15px;
+        padding-top: 5px;
+        color: black;
+    }
+    .center {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 40%;
+    }
+</style>
+<body>
+    <div>
+    <h2>Choose a user to message</h2>
+    {% for user in usernames %}
+    <figure>
+        <a href='message'><img src="https://balsamiq.com/assets/learn/controls/cameras/webcam.png" style=" width: 100px; height: 100px"></a>
+        <figcaption><a href="message">{{user}}</a></figcaption>
+    </figure>
+    {% endfor %}
+    </div>
+</body>
+</html>

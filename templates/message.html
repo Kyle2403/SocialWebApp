@@ -1,0 +1,113 @@
+{% include 'top.html' %}
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+        integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+        crossorigin="anonymous"></script>
+    <title>Document</title>
+</head>
+<style>
+    #messageInp {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: 50px;
+    }
+    .center {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 50%;
+    }
+    .messages {
+        font-size: x-large;
+    }
+</style>
+<body>
+    <figure>
+        <a href='message'><img src="https://balsamiq.com/assets/learn/controls/cameras/webcam.png" style=" width: 100px; height: 100px" class="center"></a>
+    </figure>
+    <div class="messages">
+        <input placeholder="Type Your Message" id="messageInp"/>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
+  
+    <script type="module">
+        import {
+          createDiffieHellman,
+          getDiffieHellman,
+        } from 'https://cdn.jsdelivr.net/npm/crypto-browserify@3.12.0/+esm'
+        const socket = io();
+        let messageContainer = document.querySelector(".messages");
+        let messageInp = document.getElementById("messageInp")
+
+        // initialize key pair
+        const dh = createDiffieHellman("modp15");
+        dh.generateKeys();
+        const privateKey = dh.getPrivateKey();
+        const publicKey = dh.getPublicKey();
+
+        console.log('Private key:',typeof privateKey, privateKey);
+        console.log('Public key:',typeof publicKey, publicKey);
+
+        // begin key exchange, see if there is any public key saved in localStorage
+        let otherPublicKey = JSON.parse(localStorage.getItem('publicKey'))
+        let shared_secret = null
+        if (otherPublicKey != null){
+            // this means this tab was opened later, by which the first tab's public key
+            // have been saved to localStorage. 
+            // Retrieve that key.
+            otherPublicKey = new Uint8Array(otherPublicKey.data)
+            console.log("Public key existing: ",typeof otherPublicKey, otherPublicKey)
+            localStorage.setItem('publicKey',JSON.stringify(publicKey))
+            console.log("Public key sent: ",typeof publicKey, publicKey)
+            console.log("Public key used for secret: ",typeof otherPublicKey, otherPublicKey)
+            console.log("Private key used for secret: ",typeof privateKey, privateKey)
+        }
+        else{
+            // if no public key was saved, this means this tab was opened first, thus saving
+            // public key to localStorage for the latter tab to use
+            localStorage.setItem('publicKey', JSON.stringify(publicKey));
+
+            // wait for the other tab's public key to be saved to localStorage
+            setTimeout(() => {
+                // by waiting 5 seconds, the latter tab will have saved its public key
+                // to localStorage
+                // Retrieve that key and key exchange is completed
+                otherPublicKey = JSON.parse(localStorage.getItem('publicKey'))
+                otherPublicKey = new Uint8Array(otherPublicKey.data)
+                console.log("Public key received: ",typeof otherPublicKey, otherPublicKey)
+                localStorage.clear()
+                console.log("Public key used for secret: ",typeof otherPublicKey, otherPublicKey)
+                console.log("Private key used for secret: ",typeof privateKey, privateKey)
+            },5000)
+        }
+        
+        messageInp.addEventListener("keypress", (e) => {
+            if (e.which === 13) {
+                let plain_message = messageInp.value
+                console.log("Plaintext message: ", plain_message)
+                const shared_secret = dh.computeSecret(otherPublicKey)
+                console.log("Shared secret: ",shared_secret)
+                let encrypted = CryptoJS.AES.encrypt(plain_message,shared_secret.toString('hex'))
+                socket.emit("message", encrypted.toString())
+                console.log("Encrypted message: ", encrypted.toString())
+                messageInp.value = ""
+            }
+        })
+        socket.on('message', (message) => {
+            console.log("Received enc message", message)
+            const shared_secret = dh.computeSecret(otherPublicKey)
+            console.log("Shared secret: ",shared_secret)
+            const decrypted = CryptoJS.AES.decrypt(message, shared_secret.toString('hex')).toString(CryptoJS.enc.Utf8)
+            let messageDecrypted = document.createElement("p")
+            messageDecrypted.innerText = decrypted
+            console.log("Decrypted message: ", decrypted)
+            messageContainer.appendChild(messageDecrypted)
+        })
+    </script>
+</body>
+
+</html>
