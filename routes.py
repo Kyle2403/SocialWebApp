@@ -6,7 +6,7 @@ import sql
 import os 
 import hashlib
 from flask_socketio import SocketIO, send, emit
-from loadFile import readPosts, savePost, delPost
+from loadFile import readPosts, savePost, delPost, addComment
 import webbrowser
 from threading import Timer
 
@@ -32,6 +32,15 @@ def sendMessage(message):
     print(message1)
     # send() function will emit a message vent by default
 
+@socketio.on("comment")
+def saveComment(comment):
+    title = comment.split(':')[0]
+    comment = comment.split(":")[1]
+    owner = session['name']
+    addComment(comment,title,owner)
+    print(title)
+    #emit("message", (message1), broadcast=True)
+    #send(message, broadcast=True)
 app.debug = True
 
 #####################################################

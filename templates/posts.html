@@ -1,5 +1,9 @@
 {% include 'top.html' %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+        integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+        crossorigin="anonymous"></script>
 <style>
+    
     div {
         font-size: medium;
         word-wrap: break-word;
@@ -7,6 +11,9 @@
         padding: 15px;
         padding-top: 5px;
         color: black;
+        max-height: 500px; /* Adjust the maximum height as needed */
+        overflow-y: auto;
+        overflow-x:hidden;
     }
     .center {
         display: block;
@@ -16,7 +23,7 @@
     }
     img {
         max-width: 100%;
-        max-height: 500px;
+        max-height: 400px;
         height: auto;
         display: block;
         margin-left: auto;
@@ -87,43 +94,58 @@
         border-radius: 4px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
+    #commentInp {
+        width: 42%;
+        border: none;
+        color: black;
+        outline: none;
+    }
+    #comment {
+        width: fit-content;
+        padding: 6px;
+        border: solid;
+        color: #555;
+    }
+    input {
+      text-align: right;
+    }
+
 
 </style>
 <script>
-  var TRange=null;
-  function findString (str) {
-  if (parseInt(navigator.appVersion)<4) return;
-  var strFound;
-  if (window.find) {
-
-    strFound=self.find(str);
-    if (strFound && self.getSelection && !self.getSelection().anchorNode) {
-    strFound=self.find(str)
-    }
-    if (!strFound) {
-    strFound=self.find(str,0,1)
-    while (self.find(str,0,1)) continue
-    }
-  }
-  else if (navigator.appName.indexOf("Microsoft")!=-1) {
-  if (TRange!=null) {
-   TRange.collapse(false)
-   strFound=TRange.findText(str)
-   if (strFound) TRange.select()
-  }
-  if (TRange==null || strFound==0) {
-   TRange=self.document.body.createTextRange()
-   strFound=TRange.findText(str)
-   if (strFound) TRange.select()
-  }
- }
- else if (navigator.appName=="Opera") {
-  alert ("Opera browsers not supported, sorry...")
-  return;
- }
- if (!strFound) alert ("String '"+str+"' not found!")
- return;
-}
+    var TRange=null;
+    function findString (str) {
+        if (parseInt(navigator.appVersion)<4) return;
+            var strFound;
+            if (window.find) {
+              strFound=self.find(str);
+              if (strFound && self.getSelection && !self.getSelection().anchorNode) {
+              strFound=self.find(str)
+              }
+              if (!strFound) {
+              strFound=self.find(str,0,1)
+              while (self.find(str,0,1)) continue
+              }
+            }
+        else if (navigator.appName.indexOf("Microsoft")!=-1) {
+            if (TRange!=null) {
+                TRange.collapse(false)
+                strFound=TRange.findText(str)
+                if (strFound) TRange.select()
+                }
+            if (TRange==null || strFound==0) {
+                TRange=self.document.body.createTextRange()
+                strFound=TRange.findText(str)
+                if (strFound) TRange.select()
+                }
+            }
+            else if (navigator.appName=="Opera") {
+                alert ("Opera browsers not supported, sorry...")
+                return;
+              }
+            if (!strFound) alert ("String '"+str+"' not found!")
+            return;
+            }
 </script>
 <div id="search-form">
 <form name="f1" action="" 
@@ -137,25 +159,25 @@
 {% endif %}
 <button onclick="topFunction()" id="topBtn" title="Go to top">Top</button>
 <script>
-	topbutton = document.getElementById("topBtn");
-	window.onscroll = function() {scrollFunction()};
-	function scrollFunction() {
-	  if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-	    topbutton.style.display = "block";
-	  } else {
-	    topbutton.style.display = "none";
-	  }
-	}
-	function topFunction() {
-		document.body.scrollTop = 0;
-		document.documentElement.scrollTop = 0; 
-	}
+    topbutton = document.getElementById("topBtn");
+    window.onscroll = function() {scrollFunction()};
+    function scrollFunction() {
+      if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        topbutton.style.display = "block";
+      } else {
+        topbutton.style.display = "none";
+      }
+    }
+    function topFunction() {
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0; 
+    }
 </script>
 <script>
-	mybutton = document.getElementById("myBtn");
-	mybutton.style.display = "block";
-    mybutton2 = document.getElementById("myBtn2");
-	mybutton2.style.display = "block";
+    mybutton = document.getElementById("myBtn");
+    mybutton.style.display = "block";
+      mybutton2 = document.getElementById("myBtn2");
+    mybutton2.style.display = "block";
 </script>
 <body>
     {% for post in posts %}
@@ -164,30 +186,60 @@
         <p><span class="dots"></span><span class="more">{{ post[1]|safe }}</span></p>
         <button onclick="myFunction(this)">Read more</button>
         <img src="{{ post[2] }}" alt="Pic">
+        <br>
+        
+        {% for cmt in post[3] %}
+        <p id="comment">{{ cmt }}</p> 
+        {% endfor %}   
+    
     </div>
+    <input class="center comment-input" type="text" placeholder="Comment" data-post-title ="{{ post[0] }}" id="commentInp" />
     <br>
     {% endfor %}
-    
     <script>
-    function myFunction(button) {
-      var post = button.parentNode;
-      var dots = post.querySelector(".dots");
-      var moreText = post.querySelector(".more");
-    
-      if (dots.style.display === "none") {
-        dots.style.display = "inline";
-        button.innerHTML = "Read more";
-        moreText.style.display = "none";
-      } else {
-        dots.style.display = "none";
-        button.innerHTML = "Read less";
-        moreText.style.display = "inline";
-      }
+          const socket = io();
+
+    // Function to handle the comment submission
+    function submitComment(inputElement) {
+        let postTitle = inputElement.dataset.postTitle;
+        let comment = inputElement.value;
+        let cmt = postTitle +":"+ comment
+        // Emit the 'comment' event to the server with the post title and comment content
+        socket.emit("comment", cmt);
+        // Clear the input field after submitting the comment
+        inputElement.value = "";
     }
-    var moreTextElements = document.getElementsByClassName("more");
-for (var i = 0; i < moreTextElements.length; i++) {
-  moreTextElements[i].style.display = "none";
-}
+
+    // Attach event listeners to each comment input field
+    const commentInputs = document.querySelectorAll(".comment-input");
+    commentInputs.forEach(input => {
+        input.addEventListener("keypress", (e) => {
+            if (e.which === 13) {
+                submitComment(input);
+            }
+        });
+    });
+    </script>
+    <script>
+        function myFunction(button) {
+            var post = button.parentNode;
+            var dots = post.querySelector(".dots");
+            var moreText = post.querySelector(".more");
+          
+            if (dots.style.display === "none") {
+              dots.style.display = "inline";
+              button.innerHTML = "Read more";
+              moreText.style.display = "none";
+            } else {
+              dots.style.display = "none";
+              button.innerHTML = "Read less";
+              moreText.style.display = "inline";
+            }
+          }
+        var moreTextElements = document.getElementsByClassName("more");
+        for (var i = 0; i < moreTextElements.length; i++) {
+          moreTextElements[i].style.display = "none";
+        }
     </script>
 </body>
 </html>

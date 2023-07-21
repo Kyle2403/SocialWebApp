@@ -18,12 +18,17 @@ def readPosts():
         content = all.read()
         title = content.split("END123")[0]
         body = content.split("END123")[1]
-        img = content.strip(title).replace(body,"").replace("END123","")
+        img_cmt = content.replace(title,"").replace(body,"").replace("END123","")
+        img = img_cmt.split("COmmeNT")[0]
+        cmt = img_cmt.replace(img,"").replace("COmmeNT","")
+        cmt= cmt.split("COMMENT_SEPERATOR")
+        cmt.remove("")
         new = []
         body = body.replace("\n","<br>")
         new.append(title)
         new.append(body)
         new.append(img)
+        new.append(cmt)
         posts.append(new)
     return posts
 
@@ -49,3 +54,15 @@ def delPost(title):
         return "exists"
     else:
         return "not exist"
+    
+def addComment(comment, title, owner):
+    filename = "./posts/" + title + ".txt"
+    file = open(filename,"r")
+    content = file.read()
+    file.close()
+    file = open(filename,"a")
+    if "COmmeNT" not in content:
+        file.write("COmmeNT")
+    new_comment =  owner + ": " + comment + "COMMENT_SEPERATOR"
+    file.write(new_comment)
+    file.close()
