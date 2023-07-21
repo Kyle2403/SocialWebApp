@@ -65,7 +65,7 @@
         {% if session.logged_in %}
         <ul class="pure-menu-list">
             <li class="pure-menu-item"><a href="{{ url_for('index')}}" class="pure-menu-link">Home</a></li>
-            <li class="pure-menu-item"><a href="{{ url_for('friendlist')}}" class="pure-menu-link">Message</a></li>
+            <li class="pure-menu-item"><a href="{{ url_for('message')}}" class="pure-menu-link">Message</a></li>
             <li class="pure-menu-item"><a href="{{ url_for('posts')}}" class="pure-menu-link">Posts</a></li>
             {% if session.firstadmin %}
             <li class="pure-menu-item"><a href="{{ url_for('grantadmin')}}" class="pure-menu-link">Grant/Revoke Admin Access</a></li>
