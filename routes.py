@@ -1,5 +1,6 @@
 # Importing the Flask Framework
 from flask import Flask, session
+from flask_session import Session
 from flask import redirect, url_for,render_template, request, flash
 import sql
 import os 
@@ -13,28 +14,24 @@ def open_browser():
       webbrowser.open_new("https://localhost:443")
 
 page = {}
-session = {}
 sql_db = sql.SQLDatabase()
 sql_db.database_setup()
 # Initialise the FLASK application
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
-
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 @socketio.on("message")
 def sendMessage(message):
-    message += session['name']
-    emit("message", (message), broadcast=True)
+    message1 = session['name'] + ": " + message
+    emit("message", (message1), broadcast=True)
     #send(message, broadcast=True)
-    print(message)
+    print(message1)
     # send() function will emit a message vent by default
 
-@socketio.on("public_key")
-def sendKey(public_key):
-    emit("public_key", (public_key), broadcast=True)
-    #send(public_key, broadcast=True)
-    print(public_key)
 app.debug = True
 
 #####################################################

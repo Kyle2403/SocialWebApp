@@ -23,7 +23,7 @@ body {
 ul.flashes {
     margin:  0px;
     padding: 10px;
-    background: #F44;
+    background: rgb(9, 9, 213);
     color: #FFF;
     text-align: center;
     list-style-type: none;

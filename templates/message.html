@@ -1,4 +1,6 @@
-{% include 'top.html' %}
+<!DOCTYPE html>
+
+<html>
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -6,108 +8,109 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
         integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
         crossorigin="anonymous"></script>
-    <title>Document</title>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/pure.css') }}">
+        <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/main.css') }}">
+        <title>{{ page.title }}</title>
+        
 </head>
 <style>
-    #messageInp {
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        height: 50px;
+    h1 {
+        text-align: center;
+        color: black;
     }
-    .center {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
+    .chat-box {
+        border: 2px solid #000;
+        border-radius: 5px;
         width: 50%;
+        height: 60vh;
+        padding: 10px;
+        background-color: #fff;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
-    .messages {
-        font-size: x-large;
+    .message-container {
+        overflow-y: scroll; /* Change this to 'auto' to enable automatic scrolling */
+        max-height: calc(100% - 50px); /* Subtract 50px to make room for the input field */
+        flex-grow: 1;
+    }
+    .message {
+        font-size: 16px;
+        margin: 8px 0;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+    }
+    #messageInp {
+        width: 100%;
+        padding: 0px;
+        font-size: 16px;
+        resize: none;
+
     }
 </style>
 <body>
-    <figure>
-        <a href='message'><img src="https://balsamiq.com/assets/learn/controls/cameras/webcam.png" style=" width: 100px; height: 100px" class="center"></a>
-    </figure>
-    <div class="messages">
-        <input placeholder="Type Your Message" id="messageInp"/>
+    
+    <div id="header" class="pure-menu pure-menu-horizontal">
+
+        {% if not session.logged_in %}
+        <ul class="pure-menu-list">
+            <li class="pure-menu-item"><a href="{{ url_for('login')}}" class="pure-menu-link">Login</a></li>
+            <li class="pure-menu-item"><a href="{{ url_for('register')}}" class="pure-menu-link">Register</a></li>
+            
+        </ul>
+        {% endif %}
+        
+        {% if session.logged_in %}
+        <ul class="pure-menu-list">
+            <li class="pure-menu-item"><a href="{{ url_for('index')}}" class="pure-menu-link">Home</a></li>
+            <li class="pure-menu-item"><a href="{{ url_for('friendlist')}}" class="pure-menu-link">Message</a></li>
+            <li class="pure-menu-item"><a href="{{ url_for('posts')}}" class="pure-menu-link">Posts</a></li>
+            {% if session.firstadmin %}
+            <li class="pure-menu-item"><a href="{{ url_for('grantadmin')}}" class="pure-menu-link">Grant/Revoke Admin Access</a></li>
+            {% endif %}
+            {% if session.admin %}
+            <li class="pure-menu-item"><a href="{{ url_for('usercontrol')}}" class="pure-menu-link">User Control</a></li>
+            {% endif %}
+            <li class="pure-menu-item"><a href="{{ url_for('accountsetting')}}" class="pure-menu-link">Account Setting</a></li>
+            <li class="pure-menu-item"><a href="{{ url_for('logout')}}" class="pure-menu-link">Logout</a></li>
+        </ul>
+        {% endif %}
     </div>
+    <h1> Chat box</h1>
+    <div class="chat-box">
+        <div class="message-container" id="messageContainer"></div>
+        <input type="text" placeholder="Type Your Message" id="messageInp" />
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
-  
     <script type="module">
         import {
           createDiffieHellman,
           getDiffieHellman,
         } from 'https://cdn.jsdelivr.net/npm/crypto-browserify@3.12.0/+esm'
         const socket = io();
-        let messageContainer = document.querySelector(".messages");
+        let messageContainer = document.getElementById("messageContainer");
         let messageInp = document.getElementById("messageInp")
-
-        // initialize key pair
-        const dh = createDiffieHellman("modp15");
-        dh.generateKeys();
-        const privateKey = dh.getPrivateKey();
-        const publicKey = dh.getPublicKey();
-
-        console.log('Private key:',typeof privateKey, privateKey);
-        console.log('Public key:',typeof publicKey, publicKey);
-
-        // begin key exchange, see if there is any public key saved in localStorage
-        let otherPublicKey = JSON.parse(localStorage.getItem('publicKey'))
-        let shared_secret = null
-        if (otherPublicKey != null){
-            // this means this tab was opened later, by which the first tab's public key
-            // have been saved to localStorage. 
-            // Retrieve that key.
-            otherPublicKey = new Uint8Array(otherPublicKey.data)
-            console.log("Public key existing: ",typeof otherPublicKey, otherPublicKey)
-            localStorage.setItem('publicKey',JSON.stringify(publicKey))
-            console.log("Public key sent: ",typeof publicKey, publicKey)
-            console.log("Public key used for secret: ",typeof otherPublicKey, otherPublicKey)
-            console.log("Private key used for secret: ",typeof privateKey, privateKey)
-        }
-        else{
-            // if no public key was saved, this means this tab was opened first, thus saving
-            // public key to localStorage for the latter tab to use
-            localStorage.setItem('publicKey', JSON.stringify(publicKey));
-
-            // wait for the other tab's public key to be saved to localStorage
-            setTimeout(() => {
-                // by waiting 5 seconds, the latter tab will have saved its public key
-                // to localStorage
-                // Retrieve that key and key exchange is completed
-                otherPublicKey = JSON.parse(localStorage.getItem('publicKey'))
-                otherPublicKey = new Uint8Array(otherPublicKey.data)
-                console.log("Public key received: ",typeof otherPublicKey, otherPublicKey)
-                localStorage.clear()
-                console.log("Public key used for secret: ",typeof otherPublicKey, otherPublicKey)
-                console.log("Private key used for secret: ",typeof privateKey, privateKey)
-            },5000)
-        }
         
         messageInp.addEventListener("keypress", (e) => {
             if (e.which === 13) {
                 let plain_message = messageInp.value
                 console.log("Plaintext message: ", plain_message)
-                const shared_secret = dh.computeSecret(otherPublicKey)
-                console.log("Shared secret: ",shared_secret)
-                let encrypted = CryptoJS.AES.encrypt(plain_message,shared_secret.toString('hex'))
-                socket.emit("message", encrypted.toString())
-                console.log("Encrypted message: ", encrypted.toString())
+                socket.emit("message", plain_message)
                 messageInp.value = ""
             }
         })
         socket.on('message', (message) => {
-            console.log("Received enc message", message)
-            const shared_secret = dh.computeSecret(otherPublicKey)
-            console.log("Shared secret: ",shared_secret)
-            const decrypted = CryptoJS.AES.decrypt(message, shared_secret.toString('hex')).toString(CryptoJS.enc.Utf8)
-            let messageDecrypted = document.createElement("p")
-            messageDecrypted.innerText = decrypted
-            console.log("Decrypted message: ", decrypted)
+            let messageDecrypted = document.createElement("div")
+            messageDecrypted.innerText = message
+            console.log("Decrypted message: ", message)
+            messageDecrypted.classList.add("message")
             messageContainer.appendChild(messageDecrypted)
+            const scrollPos = messageContainer.scrollHeight - messageContainer.clientHeight;
+            messageContainer.scrollTo({ top: scrollPos, behavior: 'smooth' }); // Use 'scrollTo' with 'behavior: smooth' for smooth scrolling
         })
     </script>
 </body>
-
 </html>
