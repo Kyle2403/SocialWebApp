@@ -51,17 +51,13 @@
     }
 </style>
 <body>
-    
     <div id="header" class="pure-menu pure-menu-horizontal">
-
         {% if not session.logged_in %}
         <ul class="pure-menu-list">
             <li class="pure-menu-item"><a href="{{ url_for('login')}}" class="pure-menu-link">Login</a></li>
             <li class="pure-menu-item"><a href="{{ url_for('register')}}" class="pure-menu-link">Register</a></li>
-            
         </ul>
         {% endif %}
-        
         {% if session.logged_in %}
         <ul class="pure-menu-list">
             <li class="pure-menu-item"><a href="{{ url_for('index')}}" class="pure-menu-link">Home</a></li>
@@ -83,7 +79,6 @@
         <div class="message-container" id="messageContainer"></div>
         <input type="text" placeholder="Type Your Message" id="messageInp" />
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
     <script type="module">
         import {
@@ -94,6 +89,7 @@
         let messageContainer = document.getElementById("messageContainer");
         let messageInp = document.getElementById("messageInp")
         
+        // message input and display
         messageInp.addEventListener("keypress", (e) => {
             if (e.which === 13) {
                 let plain_message = messageInp.value

@@ -159,6 +159,7 @@
 {% endif %}
 <button onclick="topFunction()" id="topBtn" title="Go to top">Top</button>
 <script>
+    // button that scrolls the page to top when hit
     topbutton = document.getElementById("topBtn");
     window.onscroll = function() {scrollFunction()};
     function scrollFunction() {
@@ -187,11 +188,9 @@
         <button onclick="myFunction(this)">Read more</button>
         <img src="{{ post[2] }}" alt="Pic">
         <br>
-        
         {% for cmt in post[3] %}
         <p id="comment">{{ cmt }}</p> 
         {% endfor %}   
-    
     </div>
     <input class="center comment-input" type="text" placeholder="Comment" data-post-title ="{{ post[0] }}" id="commentInp" />
     <br>
@@ -220,7 +219,10 @@
         });
     });
     </script>
+
+    
     <script>
+        // readless button
         function myFunction(button) {
             var post = button.parentNode;
             var dots = post.querySelector(".dots");

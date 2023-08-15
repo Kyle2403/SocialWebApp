@@ -1,2 +1,2 @@
 JavaScript ResourcesEND123For those who like to have a quick refresher on Javascript PL, this freeCodeCamp article shares resources that you might find useful. So check out this link!
-https://www.freecodecamp.org/news/learn-javascript-free-js-courses-for-beginners/END123https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/JavaScript-logo.png/800px-JavaScript-logo.png
+https://www.freecodecamp.org/news/learn-javascript-free-js-courses-for-beginners/END123https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/JavaScript-logo.png/800px-JavaScript-logo.pngCOmmeNTadmin: Cool!COMMENT_SEPERATOR

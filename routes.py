@@ -11,7 +11,7 @@ import webbrowser
 from threading import Timer
 
 def open_browser():
-      webbrowser.open_new("https://localhost:443")
+      webbrowser.open_new("http://localhost:443")
 
 page = {}
 sql_db = sql.SQLDatabase()
@@ -24,13 +24,11 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+# Receive message from user and send it to others connected users
 @socketio.on("message")
 def sendMessage(message):
     message1 = session['name'] + ": " + message
     emit("message", (message1), broadcast=True)
-    #send(message, broadcast=True)
-    print(message1)
-    # send() function will emit a message vent by default
 
 @socketio.on("comment")
 def saveComment(comment):
@@ -38,9 +36,7 @@ def saveComment(comment):
     comment = comment.split(":")[1]
     owner = session['name']
     addComment(comment,title,owner)
-    print(title)
-    #emit("message", (message1), broadcast=True)
-    #send(message, broadcast=True)
+
 app.debug = True
 
 #####################################################
@@ -103,9 +99,11 @@ def register():
     if(request.method == 'POST'):
         username = request.form['username']
         password = request.form['password']
+        # Check if username already exists
         if sql_db.username_exists(username):
             flash("Username already exists, choose another")
             return redirect(url_for('register'))
+        # Add a salt to the password, hash it and store in database for security purpose
         salt = os.urandom(16)
         new_password = salt + password.encode('utf-8')
         hashed_password = hashlib.sha256(new_password).hexdigest()
@@ -115,6 +113,9 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html',page=page)
 
+###############################################################################
+# Database of user accounts
+################################################################################
 @app.route('/database')
 def database():
     if( 'logged_in' not in session or not session['logged_in']):
@@ -125,18 +126,10 @@ def database():
     page['title'] = 'Database'
     return render_template('database.html',page=page,session=session,users=users)
 
-@app.route('/friendlist')
-def friendlist():
-    if( 'logged_in' not in session or not session['logged_in']):
-        return redirect(url_for('index'))
-    users = sql_db.users()
-    usernames = []
-    for user in users:
-        usernames.append(user[0])
-    usernames.remove(session['name'])
-    page['title'] = "Friends"
-    return render_template("friendlist.html",page=page,session=session,usernames=usernames)
 
+###############################################################################
+# Message
+################################################################################
 @app.route('/message')
 def message():
     if( 'logged_in' not in session or not session['logged_in']):
@@ -144,6 +137,9 @@ def message():
     page['title'] = "Message"
     return render_template("message.html",page=page,session=session)
 
+###############################################################################
+# Read existing ones
+################################################################################
 @app.route('/posts')
 def posts():
     if( 'logged_in' not in session or not session['logged_in']):
@@ -153,6 +149,9 @@ def posts():
     posts = readPosts()
     return render_template("posts.html",page=page,session=session, posts=posts)
 
+###############################################################################
+# Make new post
+################################################################################
 @app.route('/newpost',methods=['POST','GET'])
 def newpost():
     if( 'logged_in' not in session or not session['logged_in']):
@@ -170,6 +169,9 @@ def newpost():
     page['title'] = "New Post Prompt"
     return render_template('newpost.html',page=page,session=session)
 
+###############################################################################
+# Delete a post for admin
+################################################################################
 @app.route('/delpost',methods=['POST','GET'])
 def delpost():
     if( 'logged_in' not in session or not session['logged_in']):
@@ -192,6 +194,9 @@ def delpost():
         post_titles.append(title)
     return render_template('delpost.html',page=page,session=session,post_titles=post_titles)
 
+###############################################################################
+# Mute or delete an user for admin
+################################################################################
 @app.route('/usercontrol',methods=['POST','GET'])
 def usercontrol():
     if( 'logged_in' not in session or not session['logged_in']):
@@ -231,6 +236,9 @@ def usercontrol():
             usernames.remove(username)
     return render_template('usercontrol.html',page=page,session=session,usernames=usernames)
 
+###############################################################################
+# Change username and password
+################################################################################
 @app.route('/accountsetting',methods=['POST','GET'])
 def accountsetting():
     if( 'logged_in' not in session or not session['logged_in']):
@@ -265,6 +273,9 @@ def accountsetting():
                 flash("""New password is the same as current, nothing changed""")
     return render_template('accountsetting.html',page=page,session=session)
 
+###############################################################################
+# Make an user admin, or revoke admin priviledges
+################################################################################
 @app.route('/grantadmin',methods=['POST','GET'])
 def grantadmin():
     if( 'logged_in' not in session or not session['logged_in']):
