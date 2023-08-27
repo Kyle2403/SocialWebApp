@@ -8,7 +8,7 @@ Super admin username & password is "admin".
 * Check to see if npm is installed: npm -v
 * Install CryptoJS: npm install crypto-js
 # How to run
-* Open a terminal/command prompt and enter python web_app.py
-## Small nodes
+* Open a terminal/command prompt and enter "python web_app.py"
+## Small notes
 * In case sessions are shared between browser tabs, open another browser and login to try the chat function.
 * Reload the page after commenting to see it displayed.
