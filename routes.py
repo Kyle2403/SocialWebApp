@@ -18,7 +18,7 @@ sql_db = sql.SQLDatabase()
 sql_db.database_setup()
 # Initialise the FLASK application
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key_here'
+app.config['SECRET_KEY'] = "1convit"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "null"
 Session(app)
