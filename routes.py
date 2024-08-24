@@ -10,6 +10,7 @@ from loadFile import readPosts, savePost, delPost, addComment
 import webbrowser
 from threading import Timer
 from flask_sqlalchemy import SQLAlchemy 
+import redis
 
 def open_browser():
       webbrowser.open_new("http://localhost:443")
