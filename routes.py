@@ -19,7 +19,7 @@ sql_db.database_setup()
 # Initialise the FLASK application
 app = Flask(__name__)
 app.secret_key = "super_duper_secret_key"
-app.config['SECRET_KEY'] = "dujfhuisdhfashdfiuahsdfuiahsduifhauisdhfiushdfuihsdiufhsiudhfushdfuihsudhfuishfiudshuifh"
+#app.config['SECRET_KEY'] = "dujfhuisdhfashdfiuahsdfuiahsduifhauisdhfiushdfuihsdiufhsiudhfushdfuihsudhfuishfiudshuifh"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "null"
 Session(app)
