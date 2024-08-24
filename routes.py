@@ -22,10 +22,10 @@ sql_db.database_setup()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
 app.config["SESSION_PERMANENT"] = False
-#app.config["SESSION_TYPE"] = "filesystem"
-app.config['SESSION_TYPE'] = 'redis'
-redis_url = os.getenv('REDIS_URL')
-app.config['SESSION_REDIS'] = redis.from_url(redis_url)
+app.config["SESSION_TYPE"] = "filesystem"
+#app.config['SESSION_TYPE'] = 'redis'
+#redis_url = os.getenv('REDIS_URL')
+#app.config['SESSION_REDIS'] = redis.from_url(redis_url)
 
 Session(app)
 
