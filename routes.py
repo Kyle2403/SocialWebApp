@@ -21,7 +21,7 @@ app = Flask(__name__)
 app.secret_key = "super_duper_secret_key"
 #app.config['SECRET_KEY'] = "dujfhuisdhfashdfiuahsdfuiahsduifhauisdhfiushdfuihsdiufhsiudhfushdfuihsudhfuishfiudshuifh"
 app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
+app.config["SESSION_TYPE"] = "redis"
 Session(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
