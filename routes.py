@@ -9,7 +9,7 @@ from flask_socketio import SocketIO, send, emit
 from loadFile import readPosts, savePost, delPost, addComment
 import webbrowser
 from threading import Timer
-import redis
+from flask_sqlalchemy import SQLAlchemy 
 
 def open_browser():
       webbrowser.open_new("http://localhost:443")
@@ -19,13 +19,28 @@ sql_db = sql.SQLDatabase()
 sql_db.database_setup()
 # Initialise the FLASK application
 app = Flask(__name__)
-app.secret_key = "super_duper_secret_key"
-#app.config['SECRET_KEY'] = "dujfhuisdhfashdfiuahsdfuiahsduifhauisdhfiushdfuihsdiufhsiudhfushdfuihsudhfuishfiudshuifh"
+app.config['SECRET_KEY'] = 'your_secret_key_here'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "redis"
-app.config['SESSION_REDIS'] = redis.from_url('redis://127.0.0.1:6379')
+#app.config["SESSION_TYPE"] = "filesystem"
+app.config['SESSION_TYPE'] = 'sqlalchemy'
+  # Initialize SQLAlchemy
+app.config['SESSION_SQLALCHEMY_TABLE'] = 'sessions'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sessions.db'  # Use SQLite for simplicity
 
-Session(app)
+db = SQLAlchemy(app)
+app.config['SESSION_SQLALCHEMY'] = db
+sess = Session(app)
+class SessionModel(db.Model):
+    id = db.Column(db.String(255), primary_key=True)
+    session_data = db.Column(db.LargeBinary)
+    permanent = db.Column(db.Boolean, default=False)
+    modified = db.Column(db.DateTime)
+
+    def __repr__(self):
+        return f'<Session {self.id}>'
+with app.app_context():
+    db.create_all()
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Receive message from user and send it to others connected users
