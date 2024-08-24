@@ -20,27 +20,14 @@ sql_db.database_setup()
 # Initialise the FLASK application
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 app.config["SESSION_PERMANENT"] = False
 #app.config["SESSION_TYPE"] = "filesystem"
-app.config['SESSION_TYPE'] = 'sqlalchemy'
-  # Initialize SQLAlchemy
-app.config['SESSION_SQLALCHEMY_TABLE'] = 'sessions'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sessions.db'  # Use SQLite for simplicity
+app.config['SESSION_TYPE'] = 'redis'
+redis_url = os.getenv('REDIS_URL')
+app.config['SESSION_REDIS'] = redis.from_url(redis_url)
 
-db = SQLAlchemy(app)
-app.config['SESSION_SQLALCHEMY'] = db
-sess = Session(app)
-class SessionModel(db.Model):
-    id = db.Column(db.String(255), primary_key=True)
-    session_data = db.Column(db.LargeBinary)
-    permanent = db.Column(db.Boolean, default=False)
-    modified = db.Column(db.DateTime)
+Session(app)
 
-    def __repr__(self):
-        return f'<Session {self.id}>'
-with app.app_context():
-    db.create_all()
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Receive message from user and send it to others connected users
@@ -70,7 +57,14 @@ def index():
         return redirect(url_for('login'))
     page['title'] = 'Home'
     return render_template('home.html', session=session, page=page)
+@app.route('/set_session')
+def set_session():
+    session['key'] = 'value'
+    return 'Session set!'
 
+@app.route('/get_session')
+def get_session():
+    return session.get('key', 'Session not set!')
 ################################################################################
 # Login Page
 ################################################################################
