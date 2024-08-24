@@ -35,7 +35,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 @socketio.on("message")
 def sendMessage(message):
     message1 = session['name'] + ": " + message
-    emit("message", (message1), broadcast=True)
+    emit("message", (message1))
 
 @socketio.on("comment")
 def saveComment(comment):
