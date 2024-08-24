@@ -1,4 +1,5 @@
 from routes import *
+import os
 
 # Starting the python applicaiton
 if __name__ == '__main__':
