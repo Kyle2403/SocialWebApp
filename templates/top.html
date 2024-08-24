@@ -8,7 +8,9 @@
     <script>
       setTimeout(function() {
           var flashMsg = document.getElementById('flashes');
-          flashMsg.style.display = 'none';
+          if (flashMsg) {  // Check if the element exists
+              flashMsg.style.display = 'none';
+          }
       }, 3000);  // Adjust the duration (in milliseconds) as per your requirement
   </script>
     <body>
