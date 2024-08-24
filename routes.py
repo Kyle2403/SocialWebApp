@@ -9,6 +9,7 @@ from flask_socketio import SocketIO, send, emit
 from loadFile import readPosts, savePost, delPost, addComment
 import webbrowser
 from threading import Timer
+import redis
 
 def open_browser():
       webbrowser.open_new("http://localhost:443")
@@ -22,6 +23,8 @@ app.secret_key = "super_duper_secret_key"
 #app.config['SECRET_KEY'] = "dujfhuisdhfashdfiuahsdfuiahsduifhauisdhfiushdfuihsdiufhsiudhfushdfuihsudhfuishfiudshuifh"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "redis"
+app.config['SESSION_REDIS'] = redis.from_url('redis://127.0.0.1:6379')
+
 Session(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
